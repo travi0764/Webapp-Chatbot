@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/index.css">
+    <title>FastAPI Web App</title>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/upload">Upload</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <h1>FastAPI Web App</h1>
+        
+        <!-- Conversation Display -->
+        <div id="conversation-container" class="scrollable-container">
+            <!-- Conversations will be displayed here -->
+        </div>
+
+        <!-- Ask a Question -->
+        <div class="input-container">
+            <textarea id="question" placeholder="Type your question..."></textarea>
+            <button onclick="askQuestion()">Ask</button>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
+
+
