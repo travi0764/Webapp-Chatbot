@@ -116,12 +116,15 @@ function uploadData() {
     const progressBar = document.getElementById('progress-bar');
     const progressText = document.getElementById('progress-text');
     const uploadMessage = document.getElementById('upload-message');
+    const tokenInput = document.getElementById('token'); // New: Get token input
+
 
     // Reset progress bar and message
     resetProgress();
 
     // Create FormData object from the form
     const formData = new FormData(document.getElementById('uploadForm'));
+    formData.append('password', tokenInput.value);
 
     // Create XMLHttpRequest
     const xhr = new XMLHttpRequest();

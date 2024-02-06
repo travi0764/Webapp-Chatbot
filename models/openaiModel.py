@@ -81,6 +81,7 @@ def getLLM(handler):
                             callbacks=[handler]  # ! important
                             )
         logging.info(f"OpenAI model we are using {Config.OPENAI_MODEL}")
+        logging.info(f"Milvus database we are using {Config.MILVUS_COLLECTION_NAME}")
         return openai
     except Exception as e:
         print(str(e))

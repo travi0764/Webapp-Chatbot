@@ -38,6 +38,47 @@
 </html> -->
 
 
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/upload.css">
+    <title>FastAPI Web App - Upload</title>
+</head>
+<body>
+    Navigation Bar
+    <nav>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/upload">Upload</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <h1>File Upload</h1>
+        
+        Upload Form
+        <div class="upload-container">
+            <label for="upload" class="file-label">Choose File</label>
+            <form id="uploadForm" enctype="multipart/form-data">
+                <input type="file" id="upload" name="files" accept=".pdf, .doc, .docx, .txt" multiple>
+                <button type="button" onclick="uploadData()">Upload</button>
+            </form>
+            <div id="upload-message"></div>
+
+            Progress Bar
+            <div id="progress-container">
+                <div id="progress-bar"></div>
+                <div id="progress-text">0%</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html> -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -63,6 +104,8 @@
             <label for="upload" class="file-label">Choose File</label>
             <form id="uploadForm" enctype="multipart/form-data">
                 <input type="file" id="upload" name="files" accept=".pdf, .doc, .docx, .txt" multiple>
+                <!-- Add Token Input Field -->
+                <input type="text" id="token" name="token" placeholder="Enter token">
                 <button type="button" onclick="uploadData()">Upload</button>
             </form>
             <div id="upload-message"></div>
