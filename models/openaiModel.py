@@ -8,7 +8,7 @@ from config.config import Config
 import traceback
 import langchain
 
-langchain.debug = False
+langchain.debug = True
 
 try:
     logging.info('Initializing Memory Format.')
@@ -25,50 +25,37 @@ except Exception as e:
     logging.info(str(e))
     raise e
 
-# support_template = """تأكد من أن إجاباتك على استفسارات المستخدمين شاملة ومفيدة.
-#             قم بإنشاء إجابات مفصلة من خلال فحص المعلومات المتاحة في نتائج البحث بعناية.
-#             1. قم بفحص السياق المحدد بعناية من المعرفة الخارجية قبل الرد.
-#             2. عند الشك، استخدم عبارة "أعتذر، ولكن ذلك خارج نطاق معرفتي الحالي".
-#             3. نظم الردود في شرح واضح وخطوة بخطوة.
-#             4. قدم الإجابات باللغة العربية.
-#             تجنب بدء الردود بكلمات مفتاحية مثل "AI"، "Response"، أو ما شابه.
-            # ملخص للمحادثة: {history}
-            # المحادثة الحالية: {chat_history_lines}
-            # سياق المعرفة الخارجية: {context}
+support_template = """ 
+        Respond to user queries in a concise and respectful manner.
+        Formulate clear and comprehensive replies using the provided search result,summary and current conversation.
+        1. Analyze questions to determine the appropriate source for answers: context, summary, or current conversation.
+        2. If the question is asked in Arabic, generate the output in Arabic.
+        3. Do not add suffixes, AI, AIResponse, etc.
 
-            # استفسار المستخدم: {question}"""
+        Previous Summary: {previous_summary}
+        Current Conversation: {current_chat}
+        Context: {context}
 
-# support_template = """تأكد من أن إجاباتك على استفسارات المستخدمين شاملة ومفيدة.
-#             قم بإنشاء إجابات مفصلة من خلال فحص المعلومات المتاحة في نتائج البحث بعناية.
-#             1. قم بفحص السياق المحدد بعناية من المعرفة الخارجية قبل الرد.
-#             2. عند الشك، استخدم عبارة "أعتذر، ولكن ذلك خارج نطاق معرفتي الحالي".
-#             3. نظم الردود في شرح واضح وخطوة بخطوة.
-#             4. قدم الإجابات باللغة العربية.
-#             تجنب بدء الردود بكلمات مفتاحية مثل "AI"، "Response"، أو ما شابه.
-#             سياق المعرفة الخارجية: {context}
+        If the query is related to the current context, prioritize generating an answer based on the context. 
+        If the query is not directly related to the context or is related to the previous summary, prioritize information from the previous conversation memory.
+        If the information can be added to the current conversation context, acknowledge with "Okay, I will remember it."
 
-#             استفسار المستخدم: {question}"""
+        When searching for answers:
+        - Prioritize information from the current conversation chat.
+        - If the answer is not found in the context, refer to the previous summary and current conversation.
 
+        Ensure to balance between context, summary, and current conversation to provide the most relevant responses.
 
-# support_template = """ 
-#             Respond to user queries in a concise and respectful manner.
-#             Formulate clear and comprehensive replies using the search results provided.
-#             1. Address questions within the given context.
-#             2. Please refrain from inventing responses and kindly reply with "I apologize, but that falls outside of my current scope of knowledge."
-#             3. Approach each query with a methodical, step-by-step answer.
-#             4. If the question is asked in Arabic, generate the output in Arabic.
-#             5. Do not add suffixes, AI, AIResponse, etc.
-            
-#             External Knowledge Context: {context}
+        User's Question : {question}
+        """
 
-#             {question}"""
 
 # template = support_template.format(app=app, context=context)
 
-# SUPPORT_PROMPT = PromptTemplate(
-#     # template=support_template, input_variables=["context", "question", "history","chat_history_lines"]
-#     template=support_template, input_variables=["context", "question"]
-# )
+SUPPORT_PROMPT = PromptTemplate(
+    template=support_template, input_variables=["context", "question", "previous_summary","current_chat"]
+    # template=support_template, input_variables=["context", "question"]
+)
 
 # print("~~"*50)
 # print(f"Printing Prompt template {SUPPORT_PROMPT}")
@@ -90,13 +77,10 @@ def getLLM(handler):
         logging.error(str(e))
 
 
-def get_openai_4k(openAILLM,faiss_support_store, template):
+def get_openai_4k(openAILLM,faiss_support_store, summary, current_chat):
     try:
-        SUPPORT_PROMPT = PromptTemplate(
-            # template=support_template, input_variables=["context", "question", "history","chat_history_lines"]
-            template=template, input_variables=["context", "question"]
-        )
-        chain_type_kwargs = {"prompt": SUPPORT_PROMPT}
+        prompt_new = SUPPORT_PROMPT.partial(previous_summary = summary,current_chat = current_chat)
+        chain_type_kwargs = {"prompt": prompt_new}
         # chain_type_kwargs = {"prompt": SUPPORT_PROMPT, "memory" : memory}
         faiss_support_qa = RetrievalQA.from_chain_type(
             llm=openAILLM,

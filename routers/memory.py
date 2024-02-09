@@ -4,7 +4,7 @@ from langchain.prompts import PromptTemplate
 from config.config import Config
 import langchain
 
-langchain.debug = False
+langchain.debug = True
 
 # summary_prompt = """Given the combined summary of the previous conversation and the ongoing chat, Provide a summary of the chat conversation so far, covering the main topics, user queries, and noteworthy responses.
 # Ensure the summary is clear and can be easily referenced in future prompts.Do not add suffixes, or anything else.

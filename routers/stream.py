@@ -19,21 +19,6 @@ llm = None
 llm_chain = None
 my_handler = []
 
-support_template = """ 
-            Respond to user queries in a concise and respectful manner.
-            Formulate clear and comprehensive replies using the search results provided.
-            1. Address questions within the given context.
-            2. Please refrain from inventing responses and kindly reply with "I apologize, but that falls outside of my current scope of knowledge."
-            3. Approach each query with a methodical, step-by-step answer.
-            4. If the question is asked in Arabic, generate the output in Arabic.
-            5. Do not add suffixes, AI, AIResponse, etc.
-
-            If the query is related to the current context, prioritize generating an answer based on the context. 
-            If the query is not directly related to the context or is related to the previous summary, prioritize information from the previous conversation memory.
-            Context: {context}
-
-            User Question: {question}"""
-
 def initialisedGlobal():
 
     global vector_db, llm, llm_chain, my_handler
@@ -66,12 +51,19 @@ def store_conversation(session_id: str, question: str, response: str):
 def generate(query, session_id):
     global support_template
     try:
-        if session_id in user_sessions:
-            template = support_template + f"""\nPrevious Summary: {user_sessions[session_id]['summary']}"""
-        else:
-            template = support_template
+        summary = ''
+        current_chat = ''
+        if session_id not in user_sessions:
 
-        llm_chain = get_openai_4k(llm, vector_db, template)
+            llm_chain = get_openai_4k(llm, vector_db, summary,current_chat)
+        else:
+            summary = user_sessions[session_id]['summary']
+            current_chat = ''
+            for ele in user_sessions[session_id]['chat_history'][-3:]:
+                for key, value in ele.items():
+                    current_chat +=f"{key}: {value}\n"
+            llm_chain = get_openai_4k(llm, vector_db, summary,current_chat)
+        
         result = llm_chain.invoke({'query' : query})
 
         store_conversation(session_id, query, result)
