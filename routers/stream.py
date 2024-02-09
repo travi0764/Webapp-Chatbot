@@ -30,23 +30,28 @@ def initialisedGlobal():
     llm = getLLM(my_handler)
     logging.info("Open AI Model was initalized for streaming.")
     # llm_chain = get_openai_4k(llm, vector_db)
-
-initialisedGlobal()
+try:
+    initialisedGlobal()
+except Exception as e:
+        logging.info("Error in Initialising Global Variables.")
+        logging.info(traceback.format_exc())
+        logging.error(str(e))
+        raise e
 
 
 def store_conversation(session_id: str, question: str, response: str):
-    if session_id not in user_sessions:
-        user_sessions[session_id] = {'chat_history' : [], 'summary' : None}
-        user_sessions[session_id]['chat_history'].append({"Human": question, "AI": response['result']})
-        user_sessions[session_id]['summary'] = summarize('', user_sessions[session_id]['chat_history'][-1:])
-    else:
-        user_sessions[session_id]['chat_history'].append({"Human": question, "AI": response['result']})
-        user_sessions[session_id]['summary'] = summarize(user_sessions[session_id]['summary'], user_sessions[session_id]['chat_history'][-1:])
-
-    print('=='*50)
-    print(session_id)
-    print(user_sessions[session_id])
-    print('=='*50)
+    try:
+        if session_id not in user_sessions:
+            user_sessions[session_id] = {'chat_history' : [], 'summary' : None}
+            user_sessions[session_id]['chat_history'].append({"Human": question, "AI": response['result']})
+            user_sessions[session_id]['summary'] = summarize('', user_sessions[session_id]['chat_history'][-1:])
+        else:
+            user_sessions[session_id]['chat_history'].append({"Human": question, "AI": response['result']})
+            user_sessions[session_id]['summary'] = summarize(user_sessions[session_id]['summary'], user_sessions[session_id]['chat_history'][-1:])
+    except Exception as e:
+        logging.info(traceback.format_exc())
+        logging.error(str(e))
+        raise e
 
 def generate(query, session_id):
     global support_template

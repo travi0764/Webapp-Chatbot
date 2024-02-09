@@ -3,8 +3,10 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from config.config import Config
 import langchain
+from utils.logger import logging
+import traceback
 
-langchain.debug = True
+langchain.debug = False
 
 # summary_prompt = """Given the combined summary of the previous conversation and the ongoing chat, Provide a summary of the chat conversation so far, covering the main topics, user queries, and noteworthy responses.
 # Ensure the summary is clear and can be easily referenced in future prompts.Do not add suffixes, or anything else.
@@ -23,14 +25,25 @@ SUM_PROPMT = PromptTemplate(
     input_variables=['summary', 'chat_history'],
     template=summary_prompt
 )
-
-model = ChatOpenAI(api_key=Config.OPENAI_API_KEY)
-chain_sum = LLMChain(llm=model, prompt=SUM_PROPMT)
+try:
+    model = ChatOpenAI(api_key=Config.OPENAI_API_KEY)
+    chain_sum = LLMChain(llm=model, prompt=SUM_PROPMT)
+except Exception as e:
+    logging.info(traceback.format_exc())
+    logging.error(str(e))
+    raise e
 
 def summarize(summary, chat_conversation):
-    conversation = ""
-    for key, value in chat_conversation[0].items():
-        conversation +=f"{key}: {value}\n"
-    res = chain_sum.invoke({"summary": summary, 'chat_history':conversation})
+    try:
+        conversation = ""
+        for key, value in chat_conversation[0].items():
+            conversation +=f"{key}: {value}\n"
+        res = chain_sum.invoke({"summary": summary, 'chat_history':conversation})
+
+    except Exception as e:
+        logging.info("Error in creating summary.")
+        logging.info(traceback.format_exc())
+        logging.error(str(e))
+        raise e
 
     return res['text']

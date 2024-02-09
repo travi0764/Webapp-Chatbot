@@ -8,7 +8,7 @@ from config.config import Config
 import traceback
 import langchain
 
-langchain.debug = True
+langchain.debug = False
 
 try:
     logging.info('Initializing Memory Format.')
@@ -49,16 +49,10 @@ support_template = """
         User's Question : {question}
         """
 
-
-# template = support_template.format(app=app, context=context)
-
 SUPPORT_PROMPT = PromptTemplate(
     template=support_template, input_variables=["context", "question", "previous_summary","current_chat"]
     # template=support_template, input_variables=["context", "question"]
 )
-
-# print("~~"*50)
-# print(f"Printing Prompt template {SUPPORT_PROMPT}")
 
 def getLLM(handler):
     try:
