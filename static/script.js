@@ -69,7 +69,7 @@ function askQuestion() {
 
             // Decode the token from the result
             let token = decoder.decode(result.value);
-
+            console.log(token)
             // Append the bot's response to a new line in the conversation container
             conversationContainer.innerHTML += `${token}`;
 

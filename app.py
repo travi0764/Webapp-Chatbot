@@ -1,38 +1,29 @@
-from fastapi import FastAPI, Request, File, UploadFile, HTTPException, Form
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi import FastAPI, Request, File, UploadFile, HTTPException, Form, Depends
+from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from routers.processingUpload import processUploads
-
+from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 from utils.logger import logging
 from dotenv import load_dotenv
 from routers.stream import response_generator
+import uuid
 
 load_dotenv()
 
 app = FastAPI()
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 PASSWORD = "b94d27b9-fdec-11ec-9d64-0242ac120002"  # Set your desired password here
 
-@app.get("/", response_class=HTMLResponse)
-async def index(request: Request):
-    return HTMLResponse(content=open("static/index.html", "r").read(), status_code=200)
-
-
-@app.get("/upload", response_class=HTMLResponse)
-async def upload(request: Request):
-    return HTMLResponse(content=open("static/upload.html", "r").read(), status_code=200)
-
-@app.get("/ask-question")
-@app.post("/ask-question")
-async def ask_question(question: str):
-
-    # question_text = question.get('question')
-    logging.info(f"Query received: {question}")
-    return StreamingResponse(response_generator(question), media_type='text/event-stream')
-
+# Function to authenticate password
 def authenticate_password(password: str):
     if password != PASSWORD:
         logging.error("Invalid Password.")
@@ -41,6 +32,38 @@ def authenticate_password(password: str):
             detail="Invalid password",
         )
     return True
+
+# Middleware to manage sessions
+async def get_session_id(request: Request):
+    session_id = request.cookies.get("session_id")
+    if session_id is None:
+        session_id = str(uuid.uuid4())
+
+    logging.info(f"Session Id is {session_id}")
+    return session_id
+
+@app.get("/", response_class=HTMLResponse)
+async def index(request: Request):
+    session_id = await get_session_id(request)
+    response = HTMLResponse(content=open("static/index.html", "r").read(), status_code=200)
+    response.set_cookie(key="session_id", value=session_id)
+    return response
+
+@app.get("/upload", response_class=HTMLResponse)
+async def upload(request: Request):
+    session_id = await get_session_id(request)
+    response = HTMLResponse(content=open("static/upload.html", "r").read(), status_code=200)
+    response.set_cookie(key="session_id", value=session_id)
+    return response
+
+@app.get("/ask-question")
+@app.post("/ask-question")
+async def ask_question(request: Request, question: str, session_id: str = Depends(get_session_id)):
+    # question_text = question.get('question')
+    logging.info(f"Query received: {question}")
+    response = response_generator(question, session_id)
+    # store_conversation(session_id, question, response)
+    return StreamingResponse(response, media_type='text/event-stream')
 
 @app.post("/upload-data")
 async def upload_data(files: List[UploadFile] = File(...), password: str = Form(...)):
@@ -56,6 +79,16 @@ async def upload_data(files: List[UploadFile] = File(...), password: str = Form(
     
     res = processUploads(files)
     return res
+
+# Health API
+@app.get("/health", response_model=dict)
+async def health():
+    return JSONResponse(content={"status": "running"}, status_code=200)
+
+# Greeting API
+@app.get("/greeting", response_model=dict)
+async def greeting():
+    return JSONResponse(content={"message": "Hi, I am SIH Chatbot, How can I help you ?"}, status_code=200)
 
 if __name__ == "__main__":
     import uvicorn

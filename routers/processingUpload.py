@@ -31,7 +31,7 @@ def processUploads(files: List[UploadFile]):
                     logging.info('File successfully saved in local upload directory.')
 
                 unique_files.append(file_path)
-        print(f'Printing length of unique files {len(unique_files)}')
+        # print(f'Printing length of unique files {len(unique_files)}')
         if unique_files:
             # Process the unique and latest files using the update function
             try:

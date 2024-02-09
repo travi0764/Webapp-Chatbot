@@ -50,27 +50,28 @@ except Exception as e:
 #             استفسار المستخدم: {question}"""
 
 
-support_template = """ 
-            Respond to user queries in a concise and respectful manner.
-            Formulate clear and comprehensive replies using the search results provided.
-            1. Address questions within the given context.
-            2. please refrain from inventing responses and kindly respond with "I apologize, but that falls outside of my current scope of knowledge."
-            3. Approach each query with a methodical, step-by-step answer.
-            4. If question is aksed in arabic, then only generate the output in arabic.
-            5. Do not add suffixes, or anything else like AI, AIResponse etc.
+# support_template = """ 
+#             Respond to user queries in a concise and respectful manner.
+#             Formulate clear and comprehensive replies using the search results provided.
+#             1. Address questions within the given context.
+#             2. Please refrain from inventing responses and kindly reply with "I apologize, but that falls outside of my current scope of knowledge."
+#             3. Approach each query with a methodical, step-by-step answer.
+#             4. If the question is asked in Arabic, generate the output in Arabic.
+#             5. Do not add suffixes, AI, AIResponse, etc.
             
-            Conversation Summary: {history}
-            Current Conversation: {chat_history_lines}
-            External Knowledge Context: {context}
+#             External Knowledge Context: {context}
 
-            User Question: {question}"""
+#             {question}"""
 
+# template = support_template.format(app=app, context=context)
 
+# SUPPORT_PROMPT = PromptTemplate(
+#     # template=support_template, input_variables=["context", "question", "history","chat_history_lines"]
+#     template=support_template, input_variables=["context", "question"]
+# )
 
-SUPPORT_PROMPT = PromptTemplate(
-    template=support_template, input_variables=["context", "question", "history","chat_history_lines"]
-    # template=support_template, input_variables=["context", "question"]
-)
+# print("~~"*50)
+# print(f"Printing Prompt template {SUPPORT_PROMPT}")
 
 def getLLM(handler):
     try:
@@ -89,11 +90,14 @@ def getLLM(handler):
         logging.error(str(e))
 
 
-def get_openai_4k(openAILLM,faiss_support_store):
+def get_openai_4k(openAILLM,faiss_support_store, template):
     try:
-
-        # chain_type_kwargs = {"prompt": SUPPORT_PROMPT}
-        chain_type_kwargs = {"prompt": SUPPORT_PROMPT, "memory" : memory}
+        SUPPORT_PROMPT = PromptTemplate(
+            # template=support_template, input_variables=["context", "question", "history","chat_history_lines"]
+            template=template, input_variables=["context", "question"]
+        )
+        chain_type_kwargs = {"prompt": SUPPORT_PROMPT}
+        # chain_type_kwargs = {"prompt": SUPPORT_PROMPT, "memory" : memory}
         faiss_support_qa = RetrievalQA.from_chain_type(
             llm=openAILLM,
             chain_type="stuff",
