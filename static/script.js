@@ -43,20 +43,45 @@
 //     xhr.send(formData);
 // }
 // ================================================================================================
+// Function to get or generate a session ID
+function getSessionId() {
+    let sessionId = localStorage.getItem('session_id');
+    if (!sessionId) {
+        sessionId = generateSessionId();
+    }
+    return sessionId;
+}
+
+// Function to generate a new session ID
+function generateSessionId() {
+    const sessionId = Date.now().toString() + Math.floor(Math.random() * 1000);
+    localStorage.setItem('session_id', sessionId);
+    return sessionId;
+}
+
+// Set the session ID in the fetch headers
+function setSessionIdHeader(headers) {
+    const sessionId = getSessionId();
+    headers.append('session_id', sessionId);
+}
 
 function askQuestion() {
     const questionInput = document.getElementById('question');
     const conversationContainer = document.getElementById('conversation-container');
-
+    const sessionId = getSessionId();
     const question = questionInput.value.trim();
 
     // Add a new line for the user's query to the conversation container
     conversationContainer.innerHTML += `<div>User: ${question}</div>`;
     conversationContainer.innerHTML += `Bot: `;
-
+    console.log(question)
     // Make a POST request to the server
-    fetch(`/ask-question?question=${encodeURIComponent(question)}`, {
+    fetch(`/ask-question?question=${encodeURIComponent(question)}&session_id=${encodeURIComponent(sessionId)}`, {
         method: 'POST',
+        body: JSON.stringify({ session_id: "abcd" }),
+        headers: {
+            'Content-Type': 'application/json'
+        }
     })
     .then(response => {
         // Check if the response is a readable stream
@@ -106,6 +131,13 @@ document.getElementById('question').addEventListener('keypress', function (e) {
         askQuestion();
     }
 });
+
+window.onload = function () {
+    if (window.performance && window.performance.navigation.type === 1) {
+        // Page is refreshed, generate a new session ID
+        generateSessionId();
+    }
+};
 
 // ================================================================================================
 

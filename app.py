@@ -33,36 +33,21 @@ def authenticate_password(password: str):
         )
     return True
 
-# Middleware to manage sessions
-async def get_session_id(request: Request):
-    session_id = request.cookies.get("session_id")
-    if session_id is None:
-        session_id = str(uuid.uuid4())
-
-    logging.info(f"Session Id is {session_id}")
-    return session_id
-
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    session_id = await get_session_id(request)
     response = HTMLResponse(content=open("static/index.html", "r").read(), status_code=200)
-    response.set_cookie(key="session_id", value=session_id)
     return response
 
 @app.get("/upload", response_class=HTMLResponse)
 async def upload(request: Request):
-    session_id = await get_session_id(request)
     response = HTMLResponse(content=open("static/upload.html", "r").read(), status_code=200)
-    response.set_cookie(key="session_id", value=session_id)
     return response
 
 @app.get("/ask-question")
 @app.post("/ask-question")
-async def ask_question(request: Request, question: str, session_id: str = Depends(get_session_id)):
-    # question_text = question.get('question')
-    logging.info(f"Query received: {question}")
+async def ask_question(request: Request, question: str, session_id: str = "abcde"):
+    logging.info(f"Query received from session {session_id}: {question}")
     response = response_generator(question, session_id)
-    # store_conversation(session_id, question, response)
     return StreamingResponse(response, media_type='text/event-stream')
 
 @app.post("/upload-data")
