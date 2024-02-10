@@ -38,6 +38,7 @@ def store_vectors(data):
         connection_args={'uri' : Config.MILVUS_CLUSTER_ENDPOINT, 'token': Config.MILVUS_TOKEN},
         collection_name = Config.MILVUS_COLLECTION_NAME, ## custom collection name 
         search_params = {"metric":"L2","index_type":"FLAT","offset":0}, ## search params
+        auto_id = True
         )
         d = time.time()
         # logging.info(data[0])
