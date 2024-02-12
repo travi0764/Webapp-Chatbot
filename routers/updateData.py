@@ -9,7 +9,7 @@ from routers.stream import initialisedGlobal
 from langchain_openai import OpenAIEmbeddings
 
 
-embeddings = OpenAIEmbeddings(api_key=Config.OPENAI_API_KEY)
+embeddings = OpenAIEmbeddings(api_key=Config.OPENAI_API_KEY, model = Config.EMBEDDING_MODEL)
 logging.info('Open AI EMbedding Model Initialized.')
 
 
@@ -31,11 +31,23 @@ def prepare_Documents(input_Documents):
 
 def store_vectors(data):
     try:
+        if Config.MILVUS_CLUSTER_ENDPOINT:
+
+            CONNECTION_ARGS = {'uri' : Config.MILVUS_CLUSTER_ENDPOINT, 'token': Config.MILVUS_TOKEN}
+        else:
+            CONNECTION_ARGS = {'host' : Config.MILVUS_HOST, 'port': Config.MILVUS_PORT}
         c = time.time()
+        # vector_db = Milvus.from_documents(
+        # data,
+        # embeddings,
+        # connection_args={'uri' : Config.MILVUS_CLUSTER_ENDPOINT, 'token': Config.MILVUS_TOKEN},
+        # collection_name = Config.MILVUS_COLLECTION_NAME, ## custom collection name 
+        # search_params = {"metric":"L2","index_type":"FLAT","offset":0}, ## search params
+        # )
         vector_db = Milvus.from_documents(
         data,
         embeddings,
-        connection_args={'uri' : Config.MILVUS_CLUSTER_ENDPOINT, 'token': Config.MILVUS_TOKEN},
+        connection_args=CONNECTION_ARGS,
         collection_name = Config.MILVUS_COLLECTION_NAME, ## custom collection name 
         search_params = {"metric":"L2","index_type":"FLAT","offset":0}, ## search params
         )

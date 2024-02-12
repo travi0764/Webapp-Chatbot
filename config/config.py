@@ -14,6 +14,9 @@ class Config:
     OPENAI_MODEL = os.getenv('OPENAI_MODEL')
 
     CHUNK_SIZE = os.getenv('CHUNK_SIZE', 1024)
+    EMBEDDING_MODEL = os.getenv('EMBEDDING_MODEL', 'text-embedding-ada-002')
+    MILVUS_HOST = os.getenv('MILVUS_HOST')
+    MILVUS_PORT = os.getenv('MILVUS_PORT')
 
     # Add other configuration variables as needed
     
